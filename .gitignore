@@ -1,0 +1,28 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+gen/
+
+# Maven (Archivos compilados)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Docker (Opcional: si no querés subir los datos persistentes de las DBs si usaras carpetas locales)
+# postgres_data_alumno/
+# postgres_data_academica/

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # DB ALUMNOS + KEYCLOAK (Puerto 5433)
+  db-alumnos:
+    image: postgres:15-alpine
+    container_name: postgres_alumnos
+    restart: always
+    environment:
+      - POSTGRES_USER=alumno_user
+      - POSTGRES_PASSWORD=alumno_pass
+      - POSTGRES_DB=alumnodb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_alumno:/var/lib/postgresql/data
+    networks:
+      - educacion-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alumno_user -d alumnodb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # DB ACADÉMICA (Materias + Inscripciones) (Puerto 5434)
+  db-academica:
+    image: postgres:15-alpine
+    container_name: postgres_academica
+    restart: always
+    environment:
+      - POSTGRES_USER=materia_user
+      - POSTGRES_PASSWORD=materia_pass
+      - POSTGRES_DB=materiadb 
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./init-academica.sql:/docker-entrypoint-initdb.d/init-academica.sql
+      - postgres_data_academica:/var/lib/postgresql/data
+    networks:
+      - educacion-net
+
+  # KEYCLOAK (Puerto 9000)
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.3
+    container_name: keycloak_alumno
+    command: start-dev
+    depends_on:
+      db-alumnos:
+        condition: service_healthy
+    ports:
+      - "9000:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://db-alumnos:5432/alumnodb
+      - KC_DB_USERNAME=alumno_user
+      - KC_DB_PASSWORD=alumno_pass
+      - KC_HOSTNAME_STRICT=false
+    networks:
+      - educacion-net
+
+networks:
+  educacion-net:
+    driver: bridge
+
+volumes:
+  postgres_data_alumno:
+  postgres_data_academica:
